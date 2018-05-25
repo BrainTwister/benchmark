@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
-project(BenchmarkManager VERSION 1.0 LANGUAGES CXX)
+project(benchmark VERSION 1.0 LANGUAGES CXX)
 
 message("${PROJECT_NAME} version ${PROJECT_VERSION}")
 message("CMake build type: ${CMAKE_BUILD_TYPE}")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Download conan
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
@@ -20,14 +25,16 @@ conan_cmake_run(CONANFILE conanfile.py
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
 # Google C++ unit test framework
-FIND_PACKAGE(GTest)
+find_package(GTest)
 if(GTEST_FOUND)
-    ENABLE_TESTING()
-    add_subdirectory(test)
-endif(GTEST_FOUND)
+  enable_testing()
+  add_subdirectory(test)
+endif()
+
+set(CPACK_GENERATOR "DEB;ZIP")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Bernd Doser")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+include(CPack)
