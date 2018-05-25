@@ -24,17 +24,17 @@ TEST(benchmark, default)
 {
     Benchmark benchmark;
 
-    EXPECT_EQ(3, benchmark.get_settings().min_replications);
+    EXPECT_EQ(3UL, benchmark.get_settings().min_replications);
     EXPECT_EQ(std::chrono::seconds(1), benchmark.get_settings().min_execution_time);
     EXPECT_DOUBLE_EQ(0.1, benchmark.get_settings().spike_detection_factor);
-    EXPECT_EQ(2, benchmark.get_settings().warm_up_runs);
+    EXPECT_EQ(2UL, benchmark.get_settings().warm_up_runs);
 }
 
 TEST(benchmark, own_settings)
 {
     Benchmark benchmark(Benchmark::Settings().set_min_replications(5).set_min_execution_time(std::chrono::seconds(3)));
 
-    EXPECT_EQ(5, benchmark.get_settings().min_replications);
+    EXPECT_EQ(5UL, benchmark.get_settings().min_replications);
     EXPECT_EQ(std::chrono::seconds(3), benchmark.get_settings().min_execution_time);
     EXPECT_DOUBLE_EQ(0.1, benchmark.get_settings().spike_detection_factor);
 }
@@ -50,7 +50,7 @@ TEST(benchmark, json_settings)
     )";
     Benchmark benchmark(Benchmark::Settings(JSON{settings}));
 
-    EXPECT_EQ(10, benchmark.get_settings().min_replications);
+    EXPECT_EQ(10UL, benchmark.get_settings().min_replications);
     EXPECT_EQ(std::chrono::seconds(5), benchmark.get_settings().min_execution_time);
     EXPECT_DOUBLE_EQ(0.01, benchmark.get_settings().spike_detection_factor);
 }
@@ -97,7 +97,7 @@ TEST(benchmark, lambda_sqrt)
 {
     Benchmark benchmark{JSON{R"(
         {
-            "min_replications": 4,
+            "min_replications": 10,
             "max_replications": 100000,
             "min_execution_time": "00:00:01.000000000",
             "spike_detection": 1,
@@ -106,25 +106,16 @@ TEST(benchmark, lambda_sqrt)
         }
     )"}};
 
-    double x;
+    double x = 0.0;
     auto results = benchmark.benchIt([&x](){
         x = std::sqrt(x);
-        //std::this_thread::sleep_for(std::chrono::microseconds(1));
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }, [&x](){
         x = 9.0;
     });
 
-    std::cout << "average_time:    " << results.average_time << "\n"
-              << "shortest_time:   " << results.shortest_time << "\n"
-              << "longest_time:    " << results.longest_time << "\n"
-              << "nb_replications: " << results.nb_replications << "\n"
-              << "nb_spikes:       " << results.nb_spikes << "\n"
-              << "flops:           " << results.flops << "\n"
-              << std::flush;
-
     EXPECT_DOUBLE_EQ(3.0, x);
-    EXPECT_EQ(4UL, results.nb_replications);
+    EXPECT_EQ(10UL, results.nb_replications);
 }
 
 TEST(benchmark, sort_vector)
@@ -133,7 +124,7 @@ TEST(benchmark, sort_vector)
         {
             "min_replications": 4,
             "max_replications": 100000,
-            "min_execution_time": "00:00:10.000000000",
+            "min_execution_time": "00:00:01.000000000",
             "spike_detection": 1,
             "spike_detection_factor": 0.1,
             "warm_up_runs": 2
@@ -150,7 +141,7 @@ TEST(benchmark, sort_vector)
 	auto gen = std::bind(dist, mersenne_engine);
 	generate(std::begin(v_init), std::end(v_init), gen);
 
-    auto results = benchmark.benchIt(
+    benchmark.benchIt(
         [&v](){
             std::sort(std::begin(v), std::end(v));
         },
@@ -159,13 +150,11 @@ TEST(benchmark, sort_vector)
         }
     );
 
-    std::cout << "average_time:    " << results.average_time << "\n"
-              << "shortest_time:   " << results.shortest_time << "\n"
-              << "longest_time:    " << results.longest_time << "\n"
-              << "nb_replications: " << results.nb_replications << "\n"
-              << "nb_spikes:       " << results.nb_spikes << "\n"
-              << "flops:           " << results.flops << "\n"
-              << std::flush;
+    bool sorted = true;
+    for (size_t i = 0; i != v.size() - 1; ++i) if (v[i] > v[i+1]) {
+    	sorted = false;
+        break;
+    }
 
-    EXPECT_EQ(4UL, results.nb_replications);
+    EXPECT_EQ(true, sorted);
 }

@@ -43,8 +43,7 @@ public:
         ((myclock::duration, shortest_time, myclock::duration(0))) \
         ((myclock::duration, longest_time, myclock::duration(0))) \
         ((size_t, nb_replications, 0)) \
-        ((size_t, nb_spikes, 0)) \
-        ((double, flops, 0.0)) \
+        ((size_t, nb_spikes, 0))
     )
 
     Benchmark(Settings const& settings = Settings())
