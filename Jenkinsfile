@@ -113,7 +113,7 @@ pipeline {
       }
       post {
         success {
-          archiveArtifacts artifacts: "build*/record*", fingerprint: true
+          archiveArtifacts artifacts: "build*/benchmark*", fingerprint: true
         }
       }
     }
