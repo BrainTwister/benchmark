@@ -1,4 +1,5 @@
 #include "BrainTwister/benchmark.h"
+#include "BrainTwister/JSON.h"
 #include "gtest/gtest.h"
 #include <random>
 #include <thread>
@@ -57,40 +58,44 @@ TEST(benchmark, json_settings)
 
 TEST(benchmark, Action)
 {
-    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)));
-    Action action{130, 120, 101, 99, 100};
-    Benchmark::Results results = benchmark.benchIt(action);
-
-    EXPECT_EQ(3UL, results.nb_replications);
-    EXPECT_EQ(100, std::chrono::duration_cast<std::chrono::milliseconds>(results.average_time).count());
-    EXPECT_EQ(99, std::chrono::duration_cast<std::chrono::milliseconds>(results.shortest_time).count());
-    EXPECT_EQ(101, std::chrono::duration_cast<std::chrono::milliseconds>(results.longest_time).count());
-}
-
-TEST(benchmark, spike_detection)
-{
-    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)));
-    Action action{130, 120, 101, 150, 100, 99};
-    Benchmark::Results results = benchmark.benchIt(action);
-
-    EXPECT_EQ(3UL, results.nb_replications);
-    EXPECT_EQ(1UL, results.nb_spikes);
-    EXPECT_EQ(100, std::chrono::duration_cast<std::chrono::milliseconds>(results.average_time).count());
-    EXPECT_EQ(99, std::chrono::duration_cast<std::chrono::milliseconds>(results.shortest_time).count());
-    EXPECT_EQ(101, std::chrono::duration_cast<std::chrono::milliseconds>(results.longest_time).count());
-}
-
-TEST(benchmark, warm_up)
-{
-    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)));
-    Action action{130, 120, 101, 100, 99};
+    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100))
+                                             .set_spike_detection_factor(0.3));
+    Action action{130, 120, 110, 90, 100};
     Benchmark::Results results = benchmark.benchIt(action);
 
     EXPECT_EQ(3UL, results.nb_replications);
     EXPECT_EQ(0UL, results.nb_spikes);
-    EXPECT_EQ(100, std::chrono::duration_cast<std::chrono::milliseconds>(results.average_time).count());
-    EXPECT_EQ(99, std::chrono::duration_cast<std::chrono::milliseconds>(results.shortest_time).count());
-    EXPECT_EQ(101, std::chrono::duration_cast<std::chrono::milliseconds>(results.longest_time).count());
+    EXPECT_EQ(10, std::chrono::duration_cast<std::chrono::milliseconds>(results.average_time).count()/10);
+    EXPECT_EQ(9, std::chrono::duration_cast<std::chrono::milliseconds>(results.shortest_time).count()/10);
+    EXPECT_EQ(11, std::chrono::duration_cast<std::chrono::milliseconds>(results.longest_time).count()/10);
+}
+
+TEST(benchmark, spike_detection)
+{
+    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100))
+                                             .set_spike_detection_factor(0.3));
+    Action action{130, 120, 110, 150, 100, 90};
+    Benchmark::Results results = benchmark.benchIt(action);
+
+    EXPECT_EQ(3UL, results.nb_replications);
+    EXPECT_EQ(1UL, results.nb_spikes);
+    EXPECT_EQ(10, std::chrono::duration_cast<std::chrono::milliseconds>(results.average_time).count()/10);
+    EXPECT_EQ(9, std::chrono::duration_cast<std::chrono::milliseconds>(results.shortest_time).count()/10);
+    EXPECT_EQ(11, std::chrono::duration_cast<std::chrono::milliseconds>(results.longest_time).count()/10);
+}
+
+TEST(benchmark, warm_up)
+{
+    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100))
+                                             .set_spike_detection_factor(0.3));
+    Action action{130, 120, 110, 100, 90};
+    Benchmark::Results results = benchmark.benchIt(action);
+
+    EXPECT_EQ(3UL, results.nb_replications);
+    EXPECT_EQ(0UL, results.nb_spikes);
+    EXPECT_EQ(10, std::chrono::duration_cast<std::chrono::milliseconds>(results.average_time).count()/10);
+    EXPECT_EQ(9, std::chrono::duration_cast<std::chrono::milliseconds>(results.shortest_time).count()/10);
+    EXPECT_EQ(11, std::chrono::duration_cast<std::chrono::milliseconds>(results.longest_time).count()/10);
 }
 
 TEST(benchmark, lambda_sqrt)
@@ -135,11 +140,11 @@ TEST(benchmark, sort_vector)
     std::vector<int> v, v_init(N);
 
     std::random_device rnd_device;
-	std::mt19937 mersenne_engine(rnd_device());
-	std::uniform_int_distribution<int> dist(1, 100000);
+    std::mt19937 mersenne_engine(rnd_device());
+    std::uniform_int_distribution<int> dist(1, 100000);
 
-	auto gen = std::bind(dist, mersenne_engine);
-	generate(std::begin(v_init), std::end(v_init), gen);
+    auto gen = std::bind(dist, mersenne_engine);
+    generate(std::begin(v_init), std::end(v_init), gen);
 
     benchmark.benchIt(
         [&v](){
@@ -152,7 +157,7 @@ TEST(benchmark, sort_vector)
 
     bool sorted = true;
     for (size_t i = 0; i != v.size() - 1; ++i) if (v[i] > v[i+1]) {
-    	sorted = false;
+        sorted = false;
         break;
     }
 
