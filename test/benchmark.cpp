@@ -57,8 +57,8 @@ TEST(benchmark, json_settings)
 
 TEST(benchmark, Action)
 {
-    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)).set_warm_up_runs(0));
-    Action action{101, 99, 100};
+    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)));
+    Action action{130, 120, 101, 99, 100};
     Benchmark::Results results = benchmark.benchIt(action);
 
     EXPECT_EQ(3UL, results.nb_replications);
@@ -69,8 +69,8 @@ TEST(benchmark, Action)
 
 TEST(benchmark, spike_detection)
 {
-    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)).set_warm_up_runs(0));
-    Action action{101, 150, 100, 99};
+    Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)));
+    Action action{130, 120, 101, 150, 100, 99};
     Benchmark::Results results = benchmark.benchIt(action);
 
     EXPECT_EQ(3UL, results.nb_replications);
@@ -83,7 +83,7 @@ TEST(benchmark, spike_detection)
 TEST(benchmark, warm_up)
 {
     Benchmark benchmark(Benchmark::Settings().set_min_execution_time(std::chrono::milliseconds(100)));
-    Action action{120, 130, 101, 100, 99};
+    Action action{130, 120, 101, 100, 99};
     Benchmark::Results results = benchmark.benchIt(action);
 
     EXPECT_EQ(3UL, results.nb_replications);
