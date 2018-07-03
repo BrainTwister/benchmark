@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+namespace BrainTwister {
+
 /// Take the clock with the highest precision
 using myclock = std::chrono::high_resolution_clock;
 
@@ -15,23 +17,8 @@ void tuple_for_each(const Container& c, Fun fun)
         fun(std::get<0>(e), std::get<1>(e), std::get<2>(e));
 }
 
-auto split(std::string const& s, char separator) -> std::vector<std::string>
-{
-    std::vector<std::string> result;
-    std::string::size_type p = 0;
-    std::string::size_type q;
-
-    while ((q = s.find(separator, p)) != std::string::npos) {
-        result.emplace_back(s, p, q - p);
-        p = q + 1;
-    }
-
-    result.emplace_back(s, p);
-    return result;
-}
-
-/// Converts a string to duration
-std::ostream& operator << (std::ostream& os, myclock::duration const& d)
+/// Print chrono::duration as hh:mm:ss.nnnnnnnnn
+inline std::ostream& operator << (std::ostream& os, myclock::duration const& d)
 {
     using T = std::tuple<std::chrono::nanoseconds, int, const char*>;
 
@@ -95,15 +82,34 @@ struct DurationTranslator
 
         return boost::optional<internal_type>(oss.str());
     }
+
+private:
+
+    auto split(std::string const& s, char separator) -> std::vector<std::string>
+    {
+        std::vector<std::string> result;
+        std::string::size_type p = 0;
+        std::string::size_type q;
+
+        while ((q = s.find(separator, p)) != std::string::npos) {
+            result.emplace_back(s, p, q - p);
+            p = q + 1;
+        }
+
+        result.emplace_back(s, p);
+        return result;
+    }
 };
+
+} // namespace BrainTwister
 
 namespace boost {
 namespace property_tree {
 
 template<typename Ch, typename Traits, typename Alloc>
-struct translator_between<std::basic_string< Ch, Traits, Alloc >, myclock::duration>
+struct translator_between<std::basic_string< Ch, Traits, Alloc >, BrainTwister::myclock::duration>
 {
-    typedef DurationTranslator type;
+    typedef BrainTwister::DurationTranslator type;
 };
 
 } // namespace property_tree
