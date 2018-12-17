@@ -9,8 +9,8 @@ Copyright (C) 2018 Bernd Doser, <bernd.doser@braintwister.eu>
 
 All rights reserved.
 
-BrainTwister benchmark is free software made available under the [MIT License]
-(http://opensource.org/licenses/MIT). For details see [LICENSE](LICENSE.md).
+BrainTwister benchmark is free software made available under the
+[MIT License](http://opensource.org/licenses/MIT). For details see [LICENSE](LICENSE.md).
 
 conan.io
 --------
